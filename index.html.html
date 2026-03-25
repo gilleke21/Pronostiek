@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>⚽ Pronostiek</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080c0a;--surface:#0f1710;--surface2:#162019;
+  --border:#1d2e22;--border2:#243a2a;
+  --green:#22c55e;--green-dim:#16a34a;--green-glow:rgba(34,197,94,0.15);
+  --gold:#f59e0b;--blue:#38bdf8;--red:#f43f5e;
+  --text:#e2f0e6;--muted:#4b7057;--muted2:#6b9a78;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(34,197,94,0.07),transparent);pointer-events:none;z-index:0}
+.page{position:relative;z-index:1}
+
+/* AUTH */
+#authPage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.auth-box{width:100%;max-width:400px}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo .ball{font-size:2.8rem;display:block;margin-bottom:6px;filter:drop-shadow(0 0 18px rgba(34,197,94,.5))}
+.auth-logo h1{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:4px}
+.auth-logo p{color:var(--muted2);font-size:.88rem;margin-top:3px}
+.auth-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px}
+.auth-tabs button{flex:1;padding:14px 8px;border:none;background:none;color:var(--muted2);font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;border-radius:8px;cursor:pointer;transition:.2s;touch-action:manipulation;-webkit-appearance:none;outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);user-select:none;-webkit-user-select:none}
+.auth-tabs button.active{background:var(--green);color:#000}
+.auth-form{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:13px 14px;outline:none;transition:.2s;-webkit-appearance:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}
+.field input:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow)}
+.auth-err{color:var(--red);font-size:.84rem;text-align:center;min-height:18px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:14px 20px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:.15s;text-transform:uppercase;letter-spacing:.4px;touch-action:manipulation;-webkit-appearance:none;min-height:48px;outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);user-select:none;-webkit-user-select:none}
+.btn-primary{background:var(--green);color:#000}
+.btn-primary:active{background:#4ade80}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border2);color:var(--text)}
+.btn-ghost:active{border-color:var(--green);color:var(--green)}
+.btn-danger{background:rgba(244,63,94,.1);border:1px solid var(--red);color:var(--red)}
+.btn-danger:active{background:var(--red);color:#fff}
+.btn-gold{background:rgba(245,158,11,.15);border:1px solid var(--gold);color:var(--gold)}
+.btn-sm{padding:8px 14px;font-size:.78rem;min-height:36px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-full{width:100%}
+
+/* APP SHELL */
+#appPage{min-height:100vh;flex-direction:column;padding-bottom:68px}
+
+
+/* topbar */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 14px;display:flex;align-items:center;gap:8px;height:54px;position:sticky;top:0;z-index:200}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;color:var(--green);margin-right:auto}
+.topbar-name{font-size:.78rem;color:var(--muted2);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-name strong{color:var(--text)}
+
+/* desktop top nav */
+.top-nav{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:8px 16px;gap:4px}
+@media(min-width:680px){
+  .top-nav{display:flex}
+  .bottom-nav{display:none!important}
+  #appPage{padding-bottom:0}
+}
+.top-nav button{background:none;border:none;color:var(--muted2);font-family:'DM Sans',sans-serif;font-weight:600;font-size:.82rem;padding:8px 14px;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap;touch-action:manipulation}
+.top-nav button.active{background:var(--green);color:#000}
+
+/* bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom,0)}
+.bottom-nav button{flex:1;background:none;border:none;color:var(--muted2);font-family:'DM Sans',sans-serif;font-weight:600;font-size:.64rem;padding:9px 2px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s;touch-action:manipulation;min-height:54px;-webkit-appearance:none;outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);user-select:none;-webkit-user-select:none}
+.bottom-nav button .ni{font-size:1.25rem;line-height:1}
+.bottom-nav button.active{color:var(--green)}
+
+.main{flex:1;padding:18px 12px;max-width:860px;margin:0 auto;width:100%}
+@media(min-width:600px){.main{padding:24px 20px}}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
+@media(min-width:600px){.card{padding:22px}}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.chip-open{background:rgba(34,197,94,.15);border:1px solid var(--green);color:var(--green)}
+.chip-closed{background:rgba(244,63,94,.1);border:1px solid var(--red);color:var(--red)}
+.chip-done{background:rgba(245,158,11,.1);border:1px solid var(--gold);color:var(--gold)}
+.chip-pending{background:rgba(56,189,248,.1);border:1px solid var(--blue);color:var(--blue)}
+
+/* match rows */
+.match-list{display:flex;flex-direction:column;gap:7px}
+.match-row{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.m-num{color:var(--muted);font-weight:700;font-size:.8rem;font-family:'Bebas Neue',sans-serif}
+.m-name{font-weight:500;font-size:.88rem;line-height:1.3;word-break:break-word}
+.result-btns{display:flex;gap:5px;flex-shrink:0}
+.rb{width:48px;height:48px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-weight:800;font-size:.95rem;cursor:pointer;transition:.12s;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);user-select:none;-webkit-user-select:none}
+.rb.sel-1{background:rgba(34,197,94,.2);border-color:var(--green);color:var(--green)}
+.rb.sel-x{background:rgba(56,189,248,.15);border-color:var(--blue);color:var(--blue)}
+.rb.sel-2{background:rgba(244,63,94,.15);border-color:var(--red);color:var(--red)}
+.rb:disabled{opacity:.3;cursor:not-allowed}
+
+/* tables */
+.rtable{width:100%;border-collapse:collapse;font-size:.82rem}
+.rtable th{background:var(--surface2);padding:8px 7px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);border-bottom:1px solid var(--border)}
+.rtable td{padding:9px 7px;border-bottom:1px solid var(--border);vertical-align:middle}
+.rtable tr:last-child td{border-bottom:none}
+.rtable tr.hl td{background:rgba(34,197,94,.05)}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;font-weight:800;font-size:.76rem}
+.b1{background:rgba(34,197,94,.2);color:var(--green)}
+.bx{background:rgba(56,189,248,.15);color:var(--blue)}
+.b2{background:rgba(244,63,94,.15);color:var(--red)}
+.bok{background:rgba(34,197,94,.2);color:var(--green);font-size:.62rem}
+.bnok{background:rgba(244,63,94,.1);color:var(--red);font-size:.62rem}
+.score-pill{display:inline-flex;background:var(--green-dim);color:#fff;font-weight:700;border-radius:20px;padding:2px 11px;font-size:.86rem}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* klassement */
+.krow{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.krow:last-child{border-bottom:none}
+.krow.k1{background:rgba(245,158,11,.05)}
+.krow.k2{background:rgba(200,200,200,.03)}
+.krow.k3{background:rgba(184,115,51,.03)}
+.kpos{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;text-align:center}
+.kpos.p1{color:var(--gold)}.kpos.p2{color:#9ca3af}.kpos.p3{color:#b87333}
+.kname{font-weight:700;font-size:.92rem}
+.kpts{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--green);text-align:right}
+
+/* winner banner */
+.winner-banner{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(34,197,94,.08));border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.wb-trophy{font-size:1.8rem;flex-shrink:0}
+.wb-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--gold);letter-spacing:2px;word-break:break-word}
+.wb-sub{color:var(--muted2);font-size:.82rem;margin-top:2px}
+
+/* admin */
+.admin-h3{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--muted2);margin-bottom:10px;text-transform:uppercase}
+.istack{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.igroup{display:flex;flex-direction:column;gap:4px}
+.igroup label{font-size:.74rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:1px}
+.inp{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:12px 13px;outline:none;transition:.2s;-webkit-appearance:none;width:100%;-webkit-tap-highlight-color:rgba(0,0,0,0)}
+.inp:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow)}
+.inp-sm{padding:10px 12px;font-size:.9rem}
+.madmin-row{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+
+/* week nav */
+.week-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.week-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.78rem;cursor:pointer;transition:.15s;touch-action:manipulation;min-height:36px}
+.week-nav button.active{border-color:var(--green);color:var(--green)}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:1000;display:flex;align-items:flex-end;justify-content:center;-webkit-overflow-scrolling:touch}
+@media(min-width:500px){.modal-overlay{align-items:center;padding:20px}}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px 20px 0 0;padding:28px 24px;width:100%;max-width:440px;position:relative;z-index:1001;-webkit-overflow-scrolling:touch}
+@media(min-width:500px){.modal{border-radius:16px}}
+.modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--green);margin-bottom:16px}
+.modal-hidden{display:none!important}
+
+/* misc */
+.notif{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(80px);padding:12px 20px;border-radius:12px;font-weight:700;font-size:.86rem;box-shadow:0 4px 20px rgba(0,0,0,.4);opacity:0;transition:.3s;z-index:9999;max-width:92vw;text-align:center}
+@media(min-width:680px){.notif{bottom:24px}}
+.notif.show{transform:translateX(-50%) translateY(0);opacity:1}
+.notif.ok{background:var(--green);color:#000}
+.notif.err{background:var(--red);color:#fff}
+.tab-view{display:none}.tab-view.active{display:block}
+.empty{color:var(--muted2);text-align:center;padding:36px 16px;font-size:.9rem}
+.prono-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:11px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+hr.sep{border:none;border-top:1px solid var(--border);margin:18px 0}
+.row-gap{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* NIEUWE UITSLAG BANNER */
+.nieuw-banner{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(34,197,94,.1));border:2px solid var(--gold);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:16px;cursor:pointer;transition:.15s;animation:pulse-border 2s infinite}
+.nieuw-banner:active{opacity:.85}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 0 6px rgba(245,158,11,0)}}
+.nb-icon{font-size:2rem;flex-shrink:0}
+.nb-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:2px}
+.nb-sub{color:var(--muted2);font-size:.82rem;margin-top:2px}
+.nb-arrow{margin-left:auto;color:var(--gold);font-size:1.2rem;flex-shrink:0}
+
+/* BADGE op nav knop */
+.nav-btn-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+.nav-badge{position:absolute;top:-2px;right:calc(50% - 18px);background:var(--gold);color:#000;font-size:.6rem;font-weight:900;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;display:none}
+.nav-badge.show{display:block}
+
+/* ADMIN uitslag sectie duidelijker */
+.uitslag-card{background:linear-gradient(135deg,rgba(34,197,94,.06),rgba(34,197,94,.02));border:1px solid var(--green-dim);border-radius:12px;padding:14px;margin-bottom:12px}
+.uitslag-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.uitslag-label{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--green)}
+.hide-all{display:none!important;visibility:hidden!important;pointer-events:none!important;position:fixed!important;top:-9999px!important;left:-9999px!important}
+</style>
+</head>
+<body>
+
+<!-- CSS CHECKBOX TRICK: werkt 100% op iOS zonder JS navigatie -->
+<input type="checkbox" id="showReg" style="display:none">
+
+<div id="authWrap" style="position:relative;z-index:1">
+
+  <!-- LOGIN scherm -->
+  <div id="loginPage" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="width:100%;max-width:380px">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-size:3.5rem;margin-bottom:10px;filter:drop-shadow(0 0 20px rgba(34,197,94,.6))">⚽</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:4px">Pronostiek</div>
+        <div style="color:var(--muted2);font-size:.9rem;margin-top:4px">Voetbalclub pronostiek platform</div>
+      </div>
+      <form id="loginForm" onsubmit="doLogin();return false;" style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Gebruikersnaam</div>
+          <input id="loginUser" name="loginUser" type="text" placeholder="gebruikersnaam" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:16px;padding:15px;outline:none;-webkit-appearance:none;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div>
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Wachtwoord</div>
+          <input id="loginPass" name="loginPass" type="password" placeholder="••••••" autocomplete="current-password"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:16px;padding:15px;outline:none;-webkit-appearance:none;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div id="loginErr" style="color:var(--red);font-size:.85rem;text-align:center;min-height:18px;margin-top:-6px"></div>
+        <input type="submit" value="Inloggen →"
+          style="width:100%;background:var(--green);color:#000;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1.05rem;padding:18px;cursor:pointer;-webkit-appearance:none;box-sizing:border-box">
+        <label for="showReg" style="display:block;width:100%;background:transparent;color:var(--green);border:2px solid var(--green);border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1.05rem;padding:18px;text-align:center;box-sizing:border-box;cursor:pointer;margin:0">
+          Registreren
+        </label>
+      </form>
+    </div>
+  </div>
+
+  <!-- REGISTER scherm -->
+  <div id="registerPage" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="width:100%;max-width:380px">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-size:3.5rem;margin-bottom:10px;filter:drop-shadow(0 0 20px rgba(34,197,94,.6))">⚽</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:4px">Registreren</div>
+        <div style="color:var(--muted2);font-size:.9rem;margin-top:4px">Maak jouw account aan</div>
+      </div>
+      <form id="registerForm" onsubmit="doRegister();return false;" style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Volledige naam</div>
+          <input id="regName" name="regName" type="text" placeholder="Voor- en achternaam" autocomplete="name"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:16px;padding:15px;outline:none;-webkit-appearance:none;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div>
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Gebruikersnaam</div>
+          <input id="regUser" name="regUser" type="text" placeholder="kies een gebruikersnaam" autocapitalize="none" autocorrect="off" spellcheck="false"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:16px;padding:15px;outline:none;-webkit-appearance:none;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div>
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Wachtwoord</div>
+          <input id="regPass" name="regPass" type="password" placeholder="minimaal 4 tekens" autocomplete="new-password"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:16px;padding:15px;outline:none;-webkit-appearance:none;box-sizing:border-box;font-family:'DM Sans',sans-serif">
+        </div>
+        <div id="regErr" style="color:var(--red);font-size:.85rem;text-align:center;min-height:18px;margin-top:-6px"></div>
+        <input type="submit" value="Account aanmaken →"
+          style="width:100%;background:var(--green);color:#000;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1.05rem;padding:18px;cursor:pointer;-webkit-appearance:none;box-sizing:border-box">
+        <label for="showReg" style="display:block;width:100%;background:transparent;color:var(--green);border:2px solid var(--green);border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1.05rem;padding:18px;text-align:center;box-sizing:border-box;cursor:pointer;margin:0">
+          ← Terug naar inloggen
+        </label>
+      </form>
+    </div>
+  </div>
+
+</div><!-- /authWrap -->
+
+<style>
+/* Als checkbox NIET aangevinkt: toon login, verberg register */
+#showReg:not(:checked) ~ #authWrap #registerPage { display:none !important; }
+#showReg:not(:checked) ~ #authWrap #loginPage    { display:flex !important; }
+/* Als checkbox WEL aangevinkt: toon register, verberg login */
+#showReg:checked ~ #authWrap #loginPage    { display:none !important; }
+#showReg:checked ~ #authWrap #registerPage { display:flex !important; }
+/* Als app actief: verberg authWrap volledig */
+.hide-all{display:none!important;visibility:hidden!important;pointer-events:none!important;position:fixed!important;top:-9999px!important;left:-9999px!important}
+</style>
+
+<!-- ════ APP ════ -->
+<div id="appPage" class="page hide-all">
+
+  <!-- topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">⚽ PRONOSTIEK</div>
+    <div class="topbar-name" id="topbarUser"></div>
+    <button type="button" id="btnPwModal" class="btn btn-ghost btn-sm" title="Wachtwoord wijzigen">🔑</button>
+    <button type="button" id="btnLogout" class="btn btn-ghost btn-sm">Uit</button>
+  </div>
+
+  <!-- desktop nav player -->
+  <div class="top-nav" id="tnPlayer" style="display:none">
+    <button class="active" onclick="showPTab('my-prono')">🎯 Pronostiek</button>
+    <button onclick="showPTab('results')" style="position:relative"><span class="nav-badge" id="resultBadgeDesktop">!</span>📊 Resultaten</button>
+    <button onclick="showPTab('klassement')">🏆 Klassement</button>
+    <button onclick="showPTab('profiel')">👤 Profiel</button>
+  </div>
+
+  <!-- desktop nav admin -->
+  <div class="top-nav" id="tnAdmin" style="display:none">
+    <button class="active" onclick="showATab('admin-speeldag')">📋 Speeldag</button>
+    <button onclick="showATab('admin-results')">📊 Resultaten</button>
+    <button onclick="showATab('admin-klassement')">🏆 Klassement</button>
+    <button onclick="showATab('admin-users')">👥 Spelers</button>
+  </div>
+
+  <div class="main">
+
+    <!-- PLAYER TABS -->
+    <div id="playerTabs">
+      <div id="tab-my-prono" class="tab-view active">
+        <div class="card"><div class="card-title">🎯 Mijn Pronostiek</div><div id="myPronoContent"></div></div>
+      </div>
+      <div id="tab-results" class="tab-view">
+        <div class="card"><div class="card-title">📊 Resultaten</div><div id="pResultsContent"></div></div>
+      </div>
+      <div id="tab-klassement" class="tab-view">
+        <div class="card"><div class="card-title">🏆 Klassement</div><div id="pKlassContent"></div></div>
+      </div>
+      <div id="tab-profiel" class="tab-view">
+        <div class="card"><div class="card-title">👤 Mijn Profiel</div><div id="pProfielContent"></div></div>
+      </div>
+    </div>
+
+    <!-- ADMIN TABS -->
+    <div id="adminTabs" style="display:none">
+      <div id="tab-admin-speeldag" class="tab-view active">
+        <div class="card">
+          <div class="card-title">📋 Speeldag Beheer</div>
+          <div style="margin-bottom:20px">
+            <div class="admin-h3">Nieuwe speeldag aanmaken</div>
+            <div class="istack">
+              <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+                <div class="igroup"><label>Nummer</label><input class="inp inp-sm" type="number" id="adWeekNum" min="1" value="1"></div>
+                <div class="igroup"><label>Naam</label><input class="inp inp-sm" type="text" id="adWeekLabel" placeholder="bv. Speeldag 1"></div>
+              </div>
+              <div class="igroup"><label>Deadline</label><input class="inp inp-sm" type="datetime-local" id="adDeadline"></div>
+            </div>
+            <div id="adMatchList" style="margin-bottom:12px"></div>
+            <button class="btn btn-primary" onclick="createWeek()">✅ Speeldag aanmaken</button>
+          </div>
+          <hr class="sep">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+            <div class="admin-h3" style="margin-bottom:0">✍️ Uitslagen invoeren</div>
+            <span class="chip chip-open" style="font-size:.7rem">← Hier verbeter je de matchen</span>
+          </div>
+          <div id="adCorrectSection"></div>
+        </div>
+      </div>
+      <div id="tab-admin-results" class="tab-view">
+        <div class="card"><div class="card-title">📊 Resultaten</div><div id="aResultsContent"></div></div>
+      </div>
+      <div id="tab-admin-klassement" class="tab-view">
+        <div class="card"><div class="card-title">🏆 Klassement</div><div id="aKlassContent"></div></div>
+      </div>
+      <div id="tab-admin-users" class="tab-view">
+        <div class="card"><div class="card-title">👥 Spelers</div><div id="aUsersContent"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- bottom nav player -->
+  <div class="bottom-nav" id="bnPlayer" style="display:none">
+    <button class="active" onclick="showPTab('my-prono')"><span class="ni">🎯</span>Pronostiek</button>
+    <button onclick="showPTab('results')" style="position:relative"><span class="nav-badge" id="resultBadge">!</span><span class="ni">📊</span>Resultaten</button>
+    <button onclick="showPTab('klassement')"><span class="ni">🏆</span>Klassement</button>
+    <button onclick="showPTab('profiel')"><span class="ni">👤</span>Profiel</button>
+  </div>
+
+  <!-- bottom nav admin -->
+  <div class="bottom-nav" id="bnAdmin" style="display:none">
+    <button class="active" onclick="showATab('admin-speeldag')"><span class="ni">📋</span>Speeldag</button>
+    <button onclick="showATab('admin-results')"><span class="ni">📊</span>Resultaten</button>
+    <button onclick="showATab('admin-klassement')"><span class="ni">🏆</span>Klassement</button>
+    <button onclick="showATab('admin-users')"><span class="ni">👥</span>Spelers</button>
+  </div>
+
+</div><!-- /appPage -->
+
+<!-- WACHTWOORD MODAL -->
+<div class="modal-overlay modal-hidden" id="pwOverlay">
+  <div class="modal">
+    <h2>🔑 Wachtwoord wijzigen</h2>
+    <div class="istack">
+      <div class="igroup"><label>Huidig wachtwoord</label><input class="inp" type="password" id="pwCur" placeholder="••••••" autocomplete="current-password"></div>
+      <div class="igroup"><label>Nieuw wachtwoord</label><input class="inp" type="password" id="pwNew" placeholder="minimaal 4 tekens" autocomplete="new-password"></div>
+      <div class="igroup"><label>Bevestig nieuw</label><input class="inp" type="password" id="pwCon" placeholder="••••••" autocomplete="new-password"></div>
+    </div>
+    <div class="auth-err" id="pwErr"></div>
+    <div class="row-gap">
+      <button type="button" id="btnPwSave" class="btn btn-primary">Opslaan</button>
+      <button type="button" id="btnPwCancel" class="btn btn-ghost">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ── DB ──
+const DBK='pronostiek_v3';
+function getDB(){try{const r=localStorage.getItem(DBK);if(r)return JSON.parse(r);}catch(e){}return{users:[],weeks:[],pronos:[]};}
+function saveDB(db){try{localStorage.setItem(DBK,JSON.stringify(db));}catch(e){}}
+function hashPass(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36);}
+
+// ── SESSION ──
+let CU=null;
+try{CU=JSON.parse(localStorage.getItem('pq_u'));}catch(e){}
+function setS(u){CU=u;localStorage.setItem('pq_u',JSON.stringify(u));}
+function clrS(){CU=null;localStorage.removeItem('pq_u');}
+
+// ── AUTH ──
+function showLogin(){
+  document.getElementById('showReg').checked=false;
+}
+function showRegister(){
+  document.getElementById('showReg').checked=true;
+}
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim().toLowerCase();
+  const p=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginErr');
+  if(!u||!p){err.textContent='Vul alle velden in.';return;}
+  const db=getDB();
+  const user=db.users.find(x=>x.username===u&&x.passHash===hashPass(p));
+  if(!user){err.textContent='Onbekende gebruikersnaam of fout wachtwoord.';return;}
+  err.textContent='';setS(user);enterApp();
+}
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const u=document.getElementById('regUser').value.trim().toLowerCase();
+  const p=document.getElementById('regPass').value;
+  const err=document.getElementById('regErr');
+  if(!name||!u||!p){err.textContent='Vul alle velden in.';return;}
+  if(p.length<4){err.textContent='Wachtwoord minimaal 4 tekens.';return;}
+  const db=getDB();
+  if(db.users.find(x=>x.username===u)){err.textContent='Gebruikersnaam al in gebruik.';return;}
+  const user={id:'u'+Date.now(),username:u,name,passHash:hashPass(p),isAdmin:false,createdAt:Date.now()};
+  db.users.push(user);saveDB(db);err.textContent='';setS(user);
+  notify('Welkom '+name+'! 🎉');enterApp();
+}
+function doLogout(){
+  clrS();
+  var app=document.getElementById('appPage');
+  app.setAttribute('style','display:none!important');
+  var wrap=document.getElementById('authWrap');
+  wrap.classList.remove('hide-all');
+  wrap.removeAttribute('style');
+  document.getElementById('showReg').checked=false;
+  document.getElementById('showReg').removeAttribute('style');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginErr').textContent='';
+}
+
+// ── PASSWORD MODAL ──
+function openPwModal(){
+  ['pwCur','pwNew','pwCon'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pwErr').textContent='';
+  document.getElementById('pwOverlay').classList.remove('modal-hidden');
+}
+function closePwModal(){document.getElementById('pwOverlay').classList.add('modal-hidden');}
+function changePassword(){
+  const cur=document.getElementById('pwCur').value;
+  const nw=document.getElementById('pwNew').value;
+  const cf=document.getElementById('pwCon').value;
+  const err=document.getElementById('pwErr');
+  if(!cur||!nw||!cf){err.textContent='Vul alle velden in.';return;}
+  // Always fetch fresh from DB — session copy might be stale
+  const db=getDB();
+  const idx=db.users.findIndex(u=>u.id===CU.id);
+  if(idx<0){err.textContent='Gebruiker niet gevonden.';return;}
+  const freshUser=db.users[idx];
+  if(hashPass(cur)!==freshUser.passHash){err.textContent='Huidig wachtwoord is onjuist.';return;}
+  if(nw.length<4){err.textContent='Nieuw wachtwoord minimaal 4 tekens.';return;}
+  if(nw!==cf){err.textContent='Wachtwoorden komen niet overeen.';return;}
+  db.users[idx].passHash=hashPass(nw);saveDB(db);setS(db.users[idx]);
+  closePwModal();notify('Wachtwoord gewijzigd! ✅');
+}
+
+// ── ENTER APP ──
+function enterApp(){
+  // Verberg ALLES wat met auth te maken heeft
+  ['authWrap','showReg','loginPage','registerPage'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){
+      el.classList.add('hide-all');
+      el.style.cssText='display:none!important;visibility:hidden!important;position:fixed!important;top:-9999px!important;left:-9999px!important';
+    }
+  });
+  // Toon app - gebruik setAttribute voor maximale iOS compatibiliteit
+  var app=document.getElementById('appPage');
+  app.removeAttribute('style');
+  app.setAttribute('style','display:flex!important;flex-direction:column;min-height:100vh');
+  window.scrollTo(0,0);
+  // Naam invullen
+  document.getElementById('topbarUser').innerHTML='<strong>'+CU.name+'</strong>'+(CU.isAdmin?' <span style="color:var(--gold);font-size:.68rem">ADMIN</span>':'');
+  var isAdmin=CU.isAdmin;
+  document.getElementById('tnPlayer').style.display=isAdmin?'none':'flex';
+  document.getElementById('tnAdmin').style.display=isAdmin?'flex':'none';
+  document.getElementById('bnPlayer').style.display=isAdmin?'none':'flex';
+  document.getElementById('bnAdmin').style.display=isAdmin?'flex':'none';
+  document.getElementById('playerTabs').style.display=isAdmin?'none':'block';
+  document.getElementById('adminTabs').style.display=isAdmin?'block':'none';
+  setTimeout(function(){ if(isAdmin) renderAdminSpeeldag(); else renderMyProno(); }, 100);
+}
+
+// ── NAV ──
+function showPTab(id){
+  document.querySelectorAll('#playerTabs .tab-view').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  const ids=['my-prono','results','klassement','profiel'];
+  [document.querySelectorAll('#bnPlayer button'),document.querySelectorAll('#tnPlayer button')].forEach(btns=>btns.forEach((b,i)=>b.classList.toggle('active',ids[i]===id)));
+  if(id==='results')renderPResults();
+  if(id==='klassement')renderKlass('pKlassContent');
+  if(id==='profiel')renderProfiel();
+}
+function showATab(id){
+  document.querySelectorAll('#adminTabs .tab-view').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  const ids=['admin-speeldag','admin-results','admin-klassement','admin-users'];
+  [document.querySelectorAll('#bnAdmin button'),document.querySelectorAll('#tnAdmin button')].forEach(btns=>btns.forEach((b,i)=>b.classList.toggle('active',ids[i]===id)));
+  if(id==='admin-results')renderAResults();
+  if(id==='admin-klassement')renderKlass('aKlassContent');
+  if(id==='admin-users')renderAUsers();
+}
+
+// ── PLAYER: MY PRONO ──
+// FIX: show ALL open weeks, not just ones past deadline
+function renderMyProno(){
+  const db=getDB();const c=document.getElementById('myPronoContent');const now=Date.now();
+
+  // Check for unread results (done weeks the player hasn't "seen" yet)
+  const done=db.weeks.filter(w=>w.status==='done');
+  const seenKey='seen_'+CU.id;
+  const seen=JSON.parse(localStorage.getItem(seenKey)||'[]');
+  const newResults=done.filter(w=>!seen.includes(w.id));
+  updateResultBadge(newResults.length);
+
+  // All weeks with status 'open' — admin created them, players can fill in
+  const openWeeks=db.weeks.filter(w=>w.status==='open');
+
+  let html='';
+
+  // Toon nieuwe uitslag melding bovenaan
+  if(newResults.length>0){
+    const latest=newResults[newResults.length-1];
+    // Bereken score voor deze speler
+    const myP=db.pronos.find(p=>p.userId===CU.id&&p.weekId===latest.id);
+    const myScore=myP?myP.picks.filter((v,i)=>v===latest.correct[i]).length:null;
+    const allScores=db.pronos.filter(p=>p.weekId===latest.id).map(p=>p.picks.filter((v,i)=>v===latest.correct[i]).length);
+    const mx=allScores.length?Math.max(...allScores):0;
+    const isWinner=myScore===mx&&myScore!==null&&allScores.length>0;
+    html+=`<div class="nieuw-banner" onclick="markSeenAndGoResults('${latest.id}')">
+      <div class="nb-icon">${isWinner?'🏆':'📊'}</div>
+      <div>
+        <div class="nb-title">Nieuwe uitslag: ${latest.label}</div>
+        <div class="nb-sub">${myScore!==null?`Jouw score: ${myScore}/10${isWinner?' 🏆 Jij wint!':''}`:'Je hebt niet ingevuld'} · Tik om te bekijken</div>
+      </div>
+      <div class="nb-arrow">→</div>
+    </div>`;
+  }
+
+  if(openWeeks.length===0){
+    html+='<p class="empty">Geen actieve speeldag.<br>Kom later terug! ⏳</p>';
+    c.innerHTML=html;return;
+  }
+  const week=openWeeks[openWeeks.length-1];
+  const myProno=db.pronos.find(p=>p.userId===CU.id&&p.weekId===week.id);
+  const deadline=new Date(week.deadline);
+  const isOpen=deadline.getTime()>now;
+  window._picks=myProno?[...myProno.picks]:Array(10).fill(null);
+  const dstr=deadline.toLocaleDateString('nl-BE',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  html+=`
+    <div class="prono-row">
+      ${isOpen?`<span class="chip chip-open">🟢 Open</span><span style="color:var(--muted2);font-size:.78rem">tot ${dstr}</span>`:`<span class="chip chip-closed">🔴 Deadline verstreken</span>`}
+      ${myProno?'<span class="chip chip-done" style="margin-left:auto">✅ Opgeslagen</span>':(isOpen?'<span class="chip chip-pending" style="margin-left:auto">⏳ Invullen</span>':'')}
+    </div>
+    <div style="font-family:\'Bebas Neue\',sans-serif;font-size:1rem;color:var(--muted2);letter-spacing:2px;margin-bottom:12px">${week.label}</div>
+    <div class="match-list">
+      ${week.matches.map((m,i)=>`
+        <div class="match-row">
+          <span class="m-num">${i+1}</span>
+          <span class="m-name">${m||'Match '+(i+1)}</span>
+          <div class="result-btns">
+            <button class="rb ${window._picks[i]==='1'?'sel-1':''}" id="pb${i}1" onclick="setPick(${i},'1')" ${!isOpen?'disabled':''}>1</button>
+            <button class="rb ${window._picks[i]==='X'?'sel-x':''}" id="pb${i}X" onclick="setPick(${i},'X')" ${!isOpen?'disabled':''}>X</button>
+            <button class="rb ${window._picks[i]==='2'?'sel-2':''}" id="pb${i}2" onclick="setPick(${i},'2')" ${!isOpen?'disabled':''}>2</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    ${isOpen?`<div class="row-gap" style="align-items:center">
+      <button class="btn btn-primary" onclick="submitProno('${week.id}')">💾 Opslaan</button>
+      <span style="color:var(--muted2);font-size:.8rem" id="ss">${myProno?'Opgeslagen om '+new Date(myProno.submittedAt).toLocaleTimeString('nl-BE'):''}</span>
+    </div>`:(myProno?'<p style="color:var(--muted2);margin-top:12px;font-size:.84rem">Deadline verstreken. Jouw pronostiek staat vast.</p>':'<p style="color:var(--red);margin-top:12px;font-size:.84rem">Deadline verstreken. Je hebt niet ingevuld.</p>')}`;
+  c.innerHTML=html;
+}
+
+function updateResultBadge(count){
+  ['resultBadge','resultBadgeDesktop'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.textContent=count>0?count:'!';el.classList.toggle('show',count>0);}
+  });
+}
+
+function markSeenAndGoResults(weekId){
+  const seenKey='seen_'+CU.id;
+  const seen=JSON.parse(localStorage.getItem(seenKey)||'[]');
+  const db=getDB();
+  // Mark ALL done weeks as seen
+  db.weeks.filter(w=>w.status==='done').forEach(w=>{if(!seen.includes(w.id))seen.push(w.id);});
+  localStorage.setItem(seenKey,JSON.stringify(seen));
+  updateResultBadge(0);
+  window._prw=weekId;
+  showPTab('results');
+}
+function setPick(i,val){
+  window._picks[i]=window._picks[i]===val?null:val;
+  ['1','X','2'].forEach(v=>{
+    const b=document.getElementById(`pb${i}${v}`);
+    if(b)b.className='rb'+(window._picks[i]===v?' '+(v==='1'?'sel-1':v==='X'?'sel-x':'sel-2'):'');
+  });
+}
+function submitProno(weekId){
+  const picks=window._picks;const f=picks.filter(p=>p!==null).length;
+  if(f<10){notify(`Vul alle 10 matchen in! (${f}/10)`,true);return;}
+  const db=getDB();const ei=db.pronos.findIndex(p=>p.userId===CU.id&&p.weekId===weekId);
+  const prono={userId:CU.id,weekId,picks:[...picks],submittedAt:Date.now()};
+  if(ei>=0)db.pronos[ei]=prono;else db.pronos.push(prono);
+  saveDB(db);
+  const ss=document.getElementById('ss');if(ss)ss.textContent='Opgeslagen om '+new Date().toLocaleTimeString('nl-BE');
+  notify('Pronostiek opgeslagen! ✅');
+}
+
+// ── PLAYER: RESULTS ──
+function renderPResults(){
+  const db=getDB();const c=document.getElementById('pResultsContent');
+  // Mark all done weeks as seen
+  const seenKey='seen_'+CU.id;
+  const seen=JSON.parse(localStorage.getItem(seenKey)||'[]');
+  db.weeks.filter(w=>w.status==='done').forEach(w=>{if(!seen.includes(w.id))seen.push(w.id);});
+  localStorage.setItem(seenKey,JSON.stringify(seen));
+  updateResultBadge(0);
+
+  const done=db.weeks.filter(w=>w.status==='done');
+  if(done.length===0){c.innerHTML='<p class="empty">Nog geen verbeterde speeldagen.</p>';return;}
+  const aid=window._prw||done[done.length-1].id;window._prw=aid;
+  c.innerHTML=`<div class="week-nav" id="prNav">${done.map(w=>`<button class="${w.id===aid?'active':''}" onclick="selPRW('${w.id}')">${w.label}</button>`).join('')}</div><div id="prDetail"></div>`;
+  renderPRDetail(aid);
+}
+function selPRW(id){
+  window._prw=id;
+  const db=getDB();const done=db.weeks.filter(w=>w.status==='done');
+  document.querySelectorAll('#prNav button').forEach((b,i)=>b.classList.toggle('active',done[i]?.id===id));
+  renderPRDetail(id);
+}
+function renderPRDetail(weekId){
+  const db=getDB();const week=db.weeks.find(w=>w.id===weekId);const c=document.getElementById('prDetail');if(!week){c.innerHTML='';return;}
+  const scores=db.pronos.filter(p=>p.weekId===weekId).map(p=>{
+    const usr=db.users.find(u=>u.id===p.userId);
+    const sc=p.picks.filter((v,i)=>v===week.correct[i]).length;
+    return{name:usr?.name||'?',userId:p.userId,score:sc,detail:p.picks.map((v,i)=>({val:v,ok:v===week.correct[i]}))};
+  }).sort((a,b)=>b.score-a.score);
+  if(!scores.length){c.innerHTML='<p class="empty">Geen pronostieken ingediend.</p>';return;}
+  const mx=scores[0].score;const wns=scores.filter(s=>s.score===mx).map(s=>s.name);
+  const my=scores.find(s=>s.userId===CU.id);
+  c.innerHTML=`
+    <div class="winner-banner"><div class="wb-trophy">🏆</div><div>
+      <div class="wb-name">${wns.join(' & ')}</div><div class="wb-sub">${week.label} · ${mx}/10 punten</div>
+    </div></div>
+    ${my?`<div style="background:rgba(34,197,94,.07);border:1px solid var(--border2);border-radius:10px;padding:11px 13px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.3rem">🎯</span><div>
+        <div style="font-weight:700">Jouw score: <span style="color:var(--green);font-family:Bebas Neue,sans-serif;font-size:1.15rem">${my.score}/10</span></div>
+        <div style="color:var(--muted2);font-size:.76rem">Rang ${scores.indexOf(my)+1}/${scores.length}</div>
+      </div></div>`:''}
+    <div class="table-wrap"><table class="rtable">
+      <thead>
+        <tr><th>#</th><th>Naam</th>${week.matches.map((_,i)=>`<th style="text-align:center">M${i+1}</th>`).join('')}<th>Ptn</th></tr>
+        <tr><td colspan="2" style="padding:5px 7px;color:var(--muted2);font-size:.68rem;text-transform:uppercase">Uitslag</td>
+          ${week.correct.map(r=>`<td style="text-align:center"><span class="badge ${r==='1'?'b1':r==='X'?'bx':'b2'}">${r}</span></td>`).join('')}<td></td></tr>
+      </thead>
+      <tbody>${scores.map((s,i)=>`<tr class="${s.score===mx?'hl':''}">
+        <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+        <td style="font-weight:600">${s.name}${s.score===mx?' 🏆':''}</td>
+        ${s.detail.map(d=>`<td style="text-align:center"><span class="badge ${d.ok?'bok':'bnok'}">${d.val||'?'}</span></td>`).join('')}
+        <td><span class="score-pill">${s.score}</span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+// ── PROFIEL ──
+function renderProfiel(){
+  const db=getDB();const done=db.weeks.filter(w=>w.status==='done');
+  const myPronos=db.pronos.filter(p=>p.userId===CU.id);
+  let total=0,wins=0;
+  done.forEach(w=>{
+    const p=myPronos.find(x=>x.weekId===w.id);if(!p)return;
+    const sc=p.picks.filter((v,i)=>v===w.correct[i]).length;total+=sc;
+    const allSc=db.pronos.filter(x=>x.weekId===w.id).map(x=>x.picks.filter((v,i)=>v===w.correct[i]).length);
+    if(sc===Math.max(...allSc))wins++;
+  });
+  document.getElementById('pProfielContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--green)">${total}</div>
+        <div style="color:var(--muted2);font-size:.74rem;text-transform:uppercase;letter-spacing:.5px">Totaal punten</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--gold)">${wins}</div>
+        <div style="color:var(--muted2);font-size:.74rem;text-transform:uppercase;letter-spacing:.5px">Weekwinsten</div>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-size:.74rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Naam</div>
+      <div style="font-weight:700;margin-bottom:10px">${CU.name}</div>
+      <div style="font-size:.74rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Gebruikersnaam</div>
+      <div style="color:var(--muted2)">@${CU.username}</div>
+    </div>
+    <button class="btn btn-ghost btn-full" onclick="openPwModal()">🔑 Wachtwoord wijzigen</button>`;
+}
+
+// ── KLASSEMENT ──
+function renderKlass(cid){
+  const db=getDB();const c=document.getElementById(cid);
+  const done=db.weeks.filter(w=>w.status==='done');
+  if(!done.length){c.innerHTML='<p class="empty">Nog geen speeldagen verbeterd.</p>';return;}
+  const tot={},wins={};
+  done.forEach(w=>{
+    const wp=db.pronos.filter(p=>p.weekId===w.id);
+    const scs=wp.map(p=>({uid:p.userId,sc:p.picks.filter((v,i)=>v===w.correct[i]).length}));
+    scs.forEach(s=>{tot[s.uid]=(tot[s.uid]||0)+s.sc;});
+    const mx=scs.length?Math.max(...scs.map(s=>s.sc)):0;
+    scs.filter(s=>s.sc===mx).forEach(s=>{wins[s.uid]=(wins[s.uid]||0)+1;});
+  });
+  const sorted=db.users.filter(u=>!u.isAdmin).map(u=>({name:u.name,id:u.id,total:tot[u.id]||0,wins:wins[u.id]||0})).sort((a,b)=>b.total-a.total||b.wins-a.wins);
+  if(!sorted.length){c.innerHTML='<p class="empty">Nog geen spelers.</p>';return;}
+  c.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <div style="padding:9px 14px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:38px 1fr auto auto;gap:10px">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--muted2)">#</div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--muted2)">Naam</div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--muted2);text-align:right">🏆</div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--muted2);text-align:right">Ptn</div>
+    </div>
+    ${sorted.map((p,i)=>`<div class="krow ${i===0?'k1':i===1?'k2':i===2?'k3':''}">
+      <div class="kpos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div>
+        <div class="kname">${p.name}${!CU.isAdmin&&p.id===CU.id?' <span style="color:var(--muted2);font-size:.72rem">(jij)</span>':''}</div>
+        <div style="color:var(--muted2);font-size:.72rem">${done.length>0?(p.total/done.length).toFixed(1):0} gem/dag</div>
+      </div>
+      <div style="text-align:right;color:var(--gold);font-size:.82rem">${p.wins||'—'}</div>
+      <div class="kpts">${p.total}</div>
+    </div>`).join('')}
+  </div>
+  <p style="color:var(--muted2);font-size:.74rem;margin-top:8px">${done.length} speeldag(en)</p>`;
+}
+
+// ── ADMIN: SPEELDAG ──
+function renderAdminSpeeldag(){
+  const db=getDB();
+  document.getElementById('adMatchList').innerHTML=Array(10).fill(0).map((_,i)=>`<div class="madmin-row"><span class="m-num">${i+1}</span><input class="inp inp-sm" id="adM${i}" placeholder="Thuis - Uit"></div>`).join('');
+  document.getElementById('adWeekNum').value=db.weeks.length+1;
+  renderAdminCorrect();
+}
+function createWeek(){
+  const num=parseInt(document.getElementById('adWeekNum').value)||1;
+  const label=document.getElementById('adWeekLabel').value.trim()||`Speeldag ${num}`;
+  const deadline=document.getElementById('adDeadline').value;
+  if(!deadline){notify('Stel een deadline in!',true);return;}
+  const matches=Array(10).fill(0).map((_,i)=>document.getElementById(`adM${i}`).value.trim()||`Match ${i+1}`);
+  const db=getDB();
+  if(db.weeks.find(w=>w.num===num)){notify(`Speeldag ${num} bestaat al!`,true);return;}
+  db.weeks.push({id:'w'+Date.now(),num,label,deadline,matches,correct:null,status:'open'});
+  db.weeks.sort((a,b)=>a.num-b.num);saveDB(db);
+  notify(`${label} aangemaakt! Spelers kunnen nu invullen. ✅`);
+  document.getElementById('adWeekNum').value=db.weeks.length+1;
+  document.getElementById('adWeekLabel').value='';
+  document.getElementById('adDeadline').value='';
+  Array(10).fill(0).forEach((_,i)=>{document.getElementById(`adM${i}`).value='';});
+  renderAdminCorrect();
+}
+function renderAdminCorrect(){
+  const db=getDB();const c=document.getElementById('adCorrectSection');
+  const open=db.weeks.filter(w=>w.status==='open');
+  if(!open.length){c.innerHTML='<p style="color:var(--muted2);font-size:.88rem">Geen actieve speeldagen.</p>';return;}
+  if(!window._ac)window._ac={};
+  c.innerHTML=open.map(week=>{
+    if(!window._ac[week.id])window._ac[week.id]=week.correct?[...week.correct]:Array(10).fill(null);
+    const cor=window._ac[week.id];const now=Date.now();const dp=new Date(week.deadline).getTime()<=now;
+    const sub=db.pronos.filter(p=>p.weekId===week.id).length;
+    return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap">
+        <span style="font-family:Bebas Neue,sans-serif;font-size:1.05rem;letter-spacing:1px">${week.label}</span>
+        <span class="chip ${dp?'chip-closed':'chip-open'}">${dp?'🔴 Deadline verstreken':'🟢 Open'}</span>
+        <span style="color:var(--muted2);font-size:.76rem">${sub} ingediend</span>
+      </div>
+      <div class="match-list" style="margin-bottom:11px">
+        ${week.matches.map((m,i)=>`<div class="match-row">
+          <span class="m-num">${i+1}</span><span class="m-name">${m}</span>
+          <div class="result-btns">
+            <button class="rb ${cor[i]==='1'?'sel-1':''}" onclick="setAC('${week.id}',${i},'1')">1</button>
+            <button class="rb ${cor[i]==='X'?'sel-x':''}" onclick="setAC('${week.id}',${i},'X')">X</button>
+            <button class="rb ${cor[i]==='2'?'sel-2':''}" onclick="setAC('${week.id}',${i},'2')">2</button>
+          </div></div>`).join('')}
+      </div>
+      <div class="row-gap">
+        <button class="btn btn-primary btn-sm" onclick="saveCorrect('${week.id}')">💾 Berekenen & Afsluiten</button>
+        <button class="btn btn-danger btn-sm" onclick="delWeek('${week.id}')">🗑️ Verwijder</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function setAC(wid,i,val){
+  if(!window._ac)window._ac={};
+  if(!window._ac[wid])window._ac[wid]=Array(10).fill(null);
+  window._ac[wid][i]=window._ac[wid][i]===val?null:val;
+  renderAdminCorrect();
+}
+function saveCorrect(weekId){
+  const cor=window._ac?.[weekId];if(!cor)return;
+  const f=cor.filter(v=>v!==null).length;
+  if(f<10){notify(`Vul alle 10 uitslagen in (${f}/10)`,true);return;}
+  const db=getDB();const w=db.weeks.find(x=>x.id===weekId);if(!w)return;
+  w.correct=[...cor];w.status='done';saveDB(db);
+  notify(`${w.label} verbeterd! Klassement bijgewerkt. 🏆`);renderAdminCorrect();
+}
+function delWeek(weekId){
+  if(!confirm('Verwijder deze speeldag en alle pronostieken?'))return;
+  const db=getDB();
+  db.weeks=db.weeks.filter(w=>w.id!==weekId);
+  db.pronos=db.pronos.filter(p=>p.weekId!==weekId);
+  saveDB(db);notify('Speeldag verwijderd.');renderAdminCorrect();
+}
+
+// ── ADMIN: RESULTS ──
+function renderAResults(){
+  const db=getDB();const c=document.getElementById('aResultsContent');
+  const done=db.weeks.filter(w=>w.status==='done');
+  if(!done.length){c.innerHTML='<p class="empty">Nog geen verbeterde speeldagen.</p>';return;}
+  const aid=window._arw||done[done.length-1].id;window._arw=aid;
+  c.innerHTML=`<div class="week-nav" id="arNav">${done.map(w=>`<button class="${w.id===aid?'active':''}" onclick="selARW('${w.id}')">${w.label}</button>`).join('')}</div><div id="arDetail"></div>`;
+  renderARDetail(aid);
+}
+function selARW(id){
+  window._arw=id;const db=getDB();const done=db.weeks.filter(w=>w.status==='done');
+  document.querySelectorAll('#arNav button').forEach((b,i)=>b.classList.toggle('active',done[i]?.id===id));
+  renderARDetail(id);
+}
+function renderARDetail(weekId){
+  const db=getDB();const week=db.weeks.find(w=>w.id===weekId);const c=document.getElementById('arDetail');if(!week){c.innerHTML='';return;}
+  const scores=db.pronos.filter(p=>p.weekId===weekId).map(p=>{
+    const usr=db.users.find(u=>u.id===p.userId);
+    const sc=p.picks.filter((v,i)=>v===week.correct[i]).length;
+    return{name:usr?.name||'?',score:sc,detail:p.picks.map((v,i)=>({val:v,ok:v===week.correct[i]}))};
+  }).sort((a,b)=>b.score-a.score);
+  if(!scores.length){c.innerHTML='<p style="color:var(--muted2);padding:14px">Geen pronostieken ingediend.</p>';return;}
+  const mx=scores[0].score;const wns=scores.filter(s=>s.score===mx).map(s=>s.name);
+  const subIds=db.pronos.filter(p=>p.weekId===weekId).map(p=>p.userId);
+  const notSub=db.users.filter(u=>!u.isAdmin&&!subIds.includes(u.id)).map(u=>u.name);
+  c.innerHTML=`
+    <div class="winner-banner"><div class="wb-trophy">🏆</div><div>
+      <div class="wb-name">${wns.join(' & ')}</div><div class="wb-sub">${week.label} · ${mx}/10 · ${scores.length} deelnemer(s)</div>
+    </div></div>
+    <div class="table-wrap"><table class="rtable">
+      <thead>
+        <tr><th>#</th><th>Naam</th>${week.matches.map((_,i)=>`<th style="text-align:center">M${i+1}</th>`).join('')}<th>Ptn</th></tr>
+        <tr><td colspan="2" style="padding:5px 7px;color:var(--muted2);font-size:.68rem;text-transform:uppercase">Uitslag</td>
+          ${week.correct.map(r=>`<td style="text-align:center"><span class="badge ${r==='1'?'b1':r==='X'?'bx':'b2'}">${r}</span></td>`).join('')}<td></td></tr>
+      </thead>
+      <tbody>${scores.map((s,i)=>`<tr class="${s.score===mx?'hl':''}">
+        <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+        <td style="font-weight:600">${s.name}${s.score===mx?' 🏆':''}</td>
+        ${s.detail.map(d=>`<td style="text-align:center"><span class="badge ${d.ok?'bok':'bnok'}">${d.val||'?'}</span></td>`).join('')}
+        <td><span class="score-pill">${s.score}</span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    ${notSub.length?`<div style="margin-top:11px;padding:10px 13px;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);border-radius:9px;font-size:.8rem;color:var(--muted2)"><strong style="color:var(--red)">Niet ingediend:</strong> ${notSub.join(', ')}</div>`:''}`;
+}
+
+// ── ADMIN: USERS ──
+function renderAUsers(){
+  const db=getDB();const c=document.getElementById('aUsersContent');
+  const players=db.users.filter(u=>!u.isAdmin);
+  let html=players.length?`<div class="table-wrap"><table class="rtable" style="margin-bottom:10px">
+    <thead><tr><th>#</th><th>Naam</th><th>Gebruikersnaam</th><th>Datum</th><th></th></tr></thead>
+    <tbody>${players.map((u,i)=>`<tr><td>${i+1}</td><td style="font-weight:600">${u.name}</td><td style="color:var(--muted2)">@${u.username}</td>
+      <td style="color:var(--muted2);font-size:.76rem">${new Date(u.createdAt).toLocaleDateString('nl-BE')}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delUser('${u.id}')">✕</button></td></tr>`).join('')}</tbody>
+  </table></div><p style="color:var(--muted2);font-size:.76rem;margin-bottom:14px">${players.length} speler(s)</p>`:
+  '<p class="empty" style="padding:16px">Nog geen spelers.</p>';
+  html+=`<hr class="sep"><div class="admin-h3">Admin accounts</div>
+    <div style="margin-bottom:14px">${db.users.filter(u=>u.isAdmin).map(u=>`<div style="color:var(--muted2);font-size:.84rem;margin-bottom:4px">⚙️ <strong>${u.name}</strong> (@${u.username})</div>`).join('')}</div>
+    <div class="admin-h3">Nieuw admin account</div>
+    <div class="istack">
+      <div class="igroup"><label>Naam</label><input class="inp inp-sm" id="nAN" placeholder="Naam"></div>
+      <div class="igroup"><label>Gebruikersnaam</label><input class="inp inp-sm" id="nAU" placeholder="admin2" autocapitalize="none" autocorrect="off"></div>
+      <div class="igroup"><label>Wachtwoord</label><input class="inp inp-sm" type="password" id="nAP" placeholder="••••"></div>
+      <button class="btn btn-gold btn-sm" onclick="createAdmin()">+ Admin aanmaken</button>
+    </div>`;
+  c.innerHTML=html;
+}
+function delUser(uid){
+  if(!confirm('Verwijder deze speler en al zijn pronostieken?'))return;
+  const db=getDB();db.users=db.users.filter(u=>u.id!==uid);db.pronos=db.pronos.filter(p=>p.userId!==uid);
+  saveDB(db);notify('Speler verwijderd.');renderAUsers();
+}
+function createAdmin(){
+  const name=document.getElementById('nAN').value.trim();const u=document.getElementById('nAU').value.trim().toLowerCase();const p=document.getElementById('nAP').value;
+  if(!name||!u||!p){notify('Vul alle velden in',true);return;}
+  const db=getDB();if(db.users.find(x=>x.username===u)){notify('Gebruikersnaam al in gebruik',true);return;}
+  db.users.push({id:'u'+Date.now(),username:u,name,passHash:hashPass(p),isAdmin:true,createdAt:Date.now()});
+  saveDB(db);notify('Admin aangemaakt! ✅');renderAUsers();
+}
+
+// ── NOTIFY ──
+function notify(msg,e=false){
+  const n=document.getElementById('notif');n.textContent=msg;n.className='notif show '+(e?'err':'ok');
+  clearTimeout(window._nt);window._nt=setTimeout(()=>n.classList.remove('show'),3000);
+}
+
+// ── BOOTSTRAP ──
+(function(){
+  const db=getDB();
+  if(!db.users.find(u=>u.isAdmin)){
+    db.users.push({id:'u_a0',username:'admin',name:'Beheerder',passHash:hashPass('admin123'),isAdmin:true,createdAt:Date.now()});
+    saveDB(db);
+  }
+
+  // ── Enter op inputs ──
+  document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+  document.getElementById('regPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doRegister(); });
+
+  // ── Topbar ──
+  document.getElementById('btnPwModal').addEventListener('click', function(e){ e.preventDefault(); openPwModal(); });
+  document.getElementById('btnLogout').addEventListener('click', function(e){ e.preventDefault(); doLogout(); });
+
+  // ── Wachtwoord modal ──
+  const overlay=document.getElementById('pwOverlay');
+  overlay.addEventListener('click', function(e){ if(e.target===this) closePwModal(); });
+  document.getElementById('btnPwSave').addEventListener('click', function(e){ e.preventDefault(); changePassword(); });
+  document.getElementById('btnPwCancel').addEventListener('click', function(e){ e.preventDefault(); closePwModal(); });
+
+  // ── Auto-login als sessie bestaat ──
+  if(CU){
+    const fresh=db.users.find(u=>u.id===CU.id);
+    if(fresh){
+      setS(fresh);
+      // setTimeout zodat de DOM klaar is op iOS
+      setTimeout(enterApp, 10);
+    } else {
+      clrS();
+    }
+  }
+})();
+</script>
+</body>
+</html>
